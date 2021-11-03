@@ -30,9 +30,19 @@ func dedupeDelimiter(input string) string {
 	return strings.Join(newSegments, delimiter)
 }
 
-func commonDelimit(input string) string {
+func predelimit(input string) string {
 	re := regexp.MustCompile("★|☆")
-	return re.ReplaceAllString(input, delimiter)
+	output := re.ReplaceAllString(input, delimiter)
+
+	knownTitles := []string{
+		"はやドキ！",
+	}
+
+	for _, title := range knownTitles {
+		output = strings.ReplaceAll(output, title, title+delimiter)
+	}
+
+	return output
 }
 
 func sanitizeSlots(input string) string {
@@ -50,6 +60,10 @@ func normalizeTitle(input string) string {
 	input = re.ReplaceAllString(input, "")
 	input = strings.Trim(input, "『』")
 	return input
+}
+
+func normalizeSubtitle(input string) string {
+	return strings.ReplaceAll(input, delimiter, "　")
 }
 
 func normalizeNumber(input string) string {
@@ -101,7 +115,7 @@ func matchEpisode(input string) (int, string, error) {
 }
 
 func matchSubtitle(input string) (string, string, error) {
-	re := regexp.MustCompile(`[【「♪]([^【「♪」】]{2,})[♪」】]$`)
+	re := regexp.MustCompile(`[【「♪](.{2,})[♪」】]$`)
 
 	matches := re.FindStringSubmatch(input)
 	if matches == nil {
@@ -110,7 +124,7 @@ func matchSubtitle(input string) (string, string, error) {
 
 	output := dedupeDelimiter(strings.ReplaceAll(input, matches[0], delimiter))
 
-	return matches[1], output, nil
+	return normalizeSubtitle(matches[1]), output, nil
 }
 
 func matchTitle(input string) (string, string, string, error) {
@@ -119,18 +133,21 @@ func matchTitle(input string) (string, string, string, error) {
 		return "", "", input, fmt.Errorf("Title not found")
 	}
 
-	if len(segments[0]) < 20 {
-		return segments[0], strings.Join(segments[1:], "　"), "", nil
+	segments[0] = normalizeTitle(segments[0])
+
+	// use []rune to correctly count length in unicode chars
+	if len([]rune(segments[0])) < 20 {
+		return segments[0], normalizeSubtitle(strings.Join(segments[1:], "　")), "", nil
 	}
 
-	re := regexp.MustCompile(`\s`)
+	re := regexp.MustCompile(`\s|　`)
 
-	segments = re.Split(segments[0], 2)
+	segments = append(re.Split(segments[0], -1), segments[1:]...)
 	fallbackSubtitle := ""
-	if len(segments) == 2 {
-		fallbackSubtitle = segments[1]
+	if len(segments) > 1 {
+		fallbackSubtitle = strings.Join(segments[1:], "　")
 	}
-	return segments[0], fallbackSubtitle, "", nil
+	return segments[0], normalizeSubtitle(fallbackSubtitle), "", nil
 }
 
 func Parse(input string) (*ProgramInfo, error) {
@@ -139,7 +156,7 @@ func Parse(input string) (*ProgramInfo, error) {
 		Episode: -1,
 	}
 
-	input = dedupeDelimiter(commonDelimit(sanitizeSlots(sanitizeFlags(input))))
+	input = dedupeDelimiter(predelimit(sanitizeSlots(sanitizeFlags(input))))
 
 	date, input, err := matchDate(input)
 	if err != nil {

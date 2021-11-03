@@ -20,6 +20,9 @@ func TestSanitizeSlots(t *testing.T) {
 func TestNormalizeTitle(t *testing.T) {
 	assert.Equal(t, "劇的に沈黙",
 		normalizeTitle("ドラマ『劇的に沈黙』"))
+
+	assert.Equal(t, "ラブライブ！スーパースター！！",
+		normalizeTitle("アニメ　ラブライブ！スーパースター！！"))
 }
 
 func TestNormalizeNumber(t *testing.T) {
@@ -29,7 +32,7 @@ func TestNormalizeNumber(t *testing.T) {
 
 func TestCommonDelimit(t *testing.T) {
 	assert.Equal(t, "それＳｎｏｗ　Ｍａｎにやらせて下さい|斎藤工が大絶賛！最強の海鮮丼かけ頂上決戦！",
-		commonDelimit("それＳｎｏｗ　Ｍａｎにやらせて下さい★斎藤工が大絶賛！最強の海鮮丼かけ頂上決戦！"))
+		predelimit("それＳｎｏｗ　Ｍａｎにやらせて下さい★斎藤工が大絶賛！最強の海鮮丼かけ頂上決戦！"))
 }
 
 func TestDedupeDelimiter(t *testing.T) {
@@ -90,8 +93,6 @@ func TestMatchTitle(t *testing.T) {
 }
 
 func TestParse(t *testing.T) {
-	t.Skip()
-
 	do := func(input, title string, season, episode int, subtitle, date string) {
 		info, err := Parse(input)
 		assert.NoError(t, err)
@@ -198,6 +199,15 @@ func TestParse(t *testing.T) {
 		"2021-06-12",
 	)
 
+	do(
+		"ドラマ２５　ソロ活女子のススメ[終]「ソロ温泉＆サウナ」[字] 20210619",
+		"ソロ活女子のススメ",
+		1,
+		-1,
+		"ソロ温泉＆サウナ",
+		"2021-06-19",
+	)
+
 	// variety
 	do(
 		"人志松本の酒のツマミになる話【酒井美紀＆井上咲楽の心に響いた歌詞に松本感激！】[字] 20210716",
@@ -236,6 +246,15 @@ func TestParse(t *testing.T) {
 	)
 
 	do(
+		"ＶＳ魂【岸優太が魂チームの敵！波瑠率いるドラマ「ナイト・ドクター」チーム参戦】[字] 20210617",
+		"ＶＳ魂",
+		1,
+		-1,
+		"岸優太が魂チームの敵！波瑠率いるドラマ「ナイト・ドクター」チーム参戦",
+		"2021-06-17",
+	)
+
+	do(
 		"それＳｎｏｗ　Ｍａｎにやらせて下さい★斎藤工が大絶賛！最強の海鮮丼かけ頂上決戦！ 20211010",
 		"それＳｎｏｗ　Ｍａｎにやらせて下さい",
 		1,
@@ -249,7 +268,7 @@ func TestParse(t *testing.T) {
 		"オオカミ少年",
 		1,
 		-1,
-		"ドラゴン桜＆ももクロ参戦！あばれるドッキリ連発",
+		"ドラゴン桜＆ももクロ参戦！あばれるドッキリ連発　板野友美は愛犬家？",
 		"2021-06-11",
 	)
 
@@ -279,6 +298,15 @@ func TestParse(t *testing.T) {
 		-1,
 		"",
 		"2021-09-27",
+	)
+
+	do(
+		"はやドキ！緊急事態宣言 ９都道府県で解除決定…東京の飲食店でお酒の提供どうなる？ 20210618",
+		"はやドキ！",
+		1,
+		-1,
+		"緊急事態宣言 ９都道府県で解除決定…東京の飲食店でお酒の提供どうなる？",
+		"2021-06-18",
 	)
 
 	// sp
