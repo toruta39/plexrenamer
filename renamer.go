@@ -1,7 +1,6 @@
-package main
+package plexrenamer
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -26,8 +25,6 @@ func ScanDir(fromDir, toDir string, dryrun bool) ([]string, error) {
 			continue
 		}
 		newFilePath = filepath.Join(toDir, newFilePath)
-
-		fmt.Println("Moving", oldFilePath, "to", newFilePath)
 
 		if !dryrun {
 			err = os.Rename(oldFilePath, newFilePath)
