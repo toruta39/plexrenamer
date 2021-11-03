@@ -27,6 +27,11 @@ func ScanDir(fromDir, toDir string, dryrun bool) ([]string, error) {
 		newFilePath = filepath.Join(toDir, newFilePath)
 
 		if !dryrun {
+			err = os.MkdirAll(filepath.Dir(newFilePath), os.ModePerm)
+			if err != nil {
+				return toFiles, err
+			}
+
 			err = os.Rename(oldFilePath, newFilePath)
 			if err != nil {
 				return toFiles, err
