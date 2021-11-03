@@ -31,7 +31,7 @@ func dedupeDelimiter(input string) string {
 }
 
 func predelimit(input string) string {
-	re := regexp.MustCompile("★|☆")
+	re := regexp.MustCompile("★|☆|_")
 	output := re.ReplaceAllString(input, delimiter)
 
 	knownTitles := []string{
@@ -56,7 +56,7 @@ func sanitizeFlags(input string) string {
 }
 
 func normalizeTitle(input string) string {
-	re := regexp.MustCompile(`^(アニメ|ドラマシリーズ|ドラマ２５|ドラマ)　?`)
+	re := regexp.MustCompile(`^(アニメ|ドラマシリーズ|ドラマ２５|ドラマ)[　・]?`)
 	input = re.ReplaceAllString(input, "")
 	input = strings.Trim(input, "『』")
 	return input

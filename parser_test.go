@@ -92,6 +92,32 @@ func TestMatchTitle(t *testing.T) {
 	assert.Equal(t, "", output)
 }
 
+func TestParseNew(t *testing.T) {
+	do := func(input, title string, season, episode int, subtitle, date string) {
+		info, err := Parse(input)
+		assert.NoError(t, err)
+
+		d, _ := time.Parse("2006-01-02", date)
+		assert.Equal(t, ProgramInfo{
+			Title:    title,
+			Season:   season,
+			Episode:  episode,
+			Subtitle: subtitle,
+			Date:     d,
+		}, *info)
+	}
+
+	// anime
+	do(
+		"20211031_孤独のグルメ　Season5　＃９▽千葉県いすみ市のブタ肉塩焼きライス[字]",
+		"孤独のグルメ　Season5",
+		1,
+		9,
+		"▽千葉県いすみ市のブタ肉塩焼きライス",
+		"2021-10-31",
+	)
+}
+
 func TestParse(t *testing.T) {
 	do := func(input, title string, season, episode int, subtitle, date string) {
 		info, err := Parse(input)
