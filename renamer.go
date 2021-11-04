@@ -6,8 +6,13 @@ import (
 	"strings"
 )
 
-func ScanDir(fromDir, toDir string, dryrun bool) ([]string, error) {
-	toFiles := make([]string, 0)
+type FileResult struct {
+	From string
+	To   string
+}
+
+func ScanDir(fromDir, toDir string, dryrun bool) ([]FileResult, error) {
+	results := make([]FileResult, 0)
 
 	c, err := os.ReadDir(fromDir)
 	if err != nil {
@@ -29,19 +34,22 @@ func ScanDir(fromDir, toDir string, dryrun bool) ([]string, error) {
 		if !dryrun {
 			err = os.MkdirAll(filepath.Dir(newFilePath), os.ModePerm)
 			if err != nil {
-				return toFiles, err
+				return results, err
 			}
 
 			err = os.Rename(oldFilePath, newFilePath)
 			if err != nil {
-				return toFiles, err
+				return results, err
 			}
 		}
 
-		toFiles = append(toFiles, newFilePath)
+		results = append(results, FileResult{
+			From: oldFilePath,
+			To:   newFilePath,
+		})
 	}
 
-	return toFiles, nil
+	return results, nil
 }
 
 func GetNewFilePath(oldFilePath string) (string, error) {

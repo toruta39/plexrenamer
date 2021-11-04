@@ -18,12 +18,12 @@ func main() {
 		return
 	}
 
-	toFiles, err := plexrenamer.ScanDir(*fromDir, *toDir, *dryrun)
+	results, err := plexrenamer.ScanDir(*fromDir, *toDir, *dryrun)
 	if err != nil {
 		panic(err)
 	}
 
-	for _, file := range toFiles {
-		fmt.Printf("Moved: %s\n", file)
+	for _, result := range results {
+		fmt.Printf("Moved %s --> %s\n", result.From, result.To)
 	}
 }
